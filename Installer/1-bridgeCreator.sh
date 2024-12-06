@@ -31,8 +31,15 @@ ensure_networkd_active() {
 # Funzione per rilevare le interfacce di rete disponibili
 select_interfaces() {
     echo "Rilevamento delle interfacce di rete disponibili..."
-    local available_interfaces=$(ls /sys/class/net | grep -v -E 'lo|br')
+    
+    # Filtro per escludere loopback e bridge
+    local available_interfaces=$(ls /sys/class/net | grep -v -E '^lo$|^br[0-9]*$')
     local interfaces_array=($available_interfaces)
+
+    if [ ${#interfaces_array[@]} -eq 0 ]; then
+        echo "Nessuna interfaccia disponibile per creare il bridge. Uscita."
+        exit 1
+    fi
 
     echo "Seleziona le interfacce da includere nel bridge:"
     for i in "${!interfaces_array[@]}"; do
