@@ -45,6 +45,39 @@ install_glances() {
     echo "Glances installato correttamente!"
 }
 
+# Aggiungere Glances -w in Autostart ad ogni riavvio
+configure_glances_autostart() {
+    echo "Configurazione di Glances per l'avvio automatico in modalità web server..."
+
+    # Percorso del file di servizio
+    SERVICE_FILE="/etc/systemd/system/glances.service"
+
+    # Creazione del file di servizio
+    cat > "$SERVICE_FILE" <<EOF
+[Unit]
+Description=Glances Web Server
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/glances -w
+Restart=always
+User=root
+WorkingDirectory=/root
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    # Ricarica i file di configurazione di systemd
+    systemctl daemon-reload
+
+    # Abilita e avvia il servizio
+    systemctl enable glances
+    systemctl start glances || { echo "Errore durante l'avvio del servizio Glances."; exit 1; }
+
+    echo "Glances è stato configurato per avviarsi automaticamente all'accensione del sistema."
+}
+
 # Funzione principale
 main() {
     check_root
