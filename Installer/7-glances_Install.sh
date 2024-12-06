@@ -84,6 +84,7 @@ main() {
     install_pip3_if_missing
     check_glances
     install_glances
+    configure_glances_autostart
 }
 
 # Esecuzione dello script
