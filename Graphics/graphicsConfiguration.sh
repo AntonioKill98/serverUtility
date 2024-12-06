@@ -26,6 +26,7 @@ EOF
             Entry = "HTop" { Actions = "Exec uxterm -e htop" } \
             Entry = "Transmission" { Actions = "Exec transmission-gtk" } \
             Entry = "Glances" { Actions = "Exec uxterm -e glances" } \
+            Entry = "GParted" { Actions = "Exec gparted" } \
         } \
         Separator {}
         }' "$MENU_FILE"
