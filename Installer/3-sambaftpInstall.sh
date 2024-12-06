@@ -16,6 +16,7 @@ update_system() {
 
 # Funzione per creare il gruppo "shareGroup" se non esiste
 create_share_group() {
+    local SHARE_GROUP="ShareGroup"
     echo "Creazione del gruppo '${SHARE_GROUP}'..."
     if ! getent group "${SHARE_GROUP}" > /dev/null; then
         groupadd "${SHARE_GROUP}"
