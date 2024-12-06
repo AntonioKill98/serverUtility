@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Variabili globali
+selected_interfaces=()  # Interfacce selezionate
+bridge_name="br0"       # Nome predefinito del bridge
+
 # Verifica che lo script sia eseguito come root
 check_root() {
     if [[ $EUID -ne 0 ]]; then
@@ -49,7 +53,7 @@ select_interfaces() {
     echo "Inserisci i numeri delle interfacce da includere nel bridge (es. 0 1):"
     read -p "Scelta: " -r selected_numbers
 
-    local selected_interfaces=()
+    selected_interfaces=()  # Reset della variabile globale
     for num in $selected_numbers; do
         selected_interfaces+=("${interfaces_array[$num]}")
     done
@@ -60,13 +64,11 @@ select_interfaces() {
     fi
 
     echo "Interfacce selezionate: ${selected_interfaces[*]}"
-    echo "${selected_interfaces[@]}"
 }
 
 # Funzione per commentare le interfacce in /etc/network/interfaces
 comment_interfaces_in_file() {
     local interfaces_file="/etc/network/interfaces"
-    local selected_interfaces=("$@")
 
     if [ -f "$interfaces_file" ]; then
         echo "Commento le configurazioni esistenti nel file ${interfaces_file}..."
@@ -81,9 +83,6 @@ comment_interfaces_in_file() {
 
 # Funzione per creare i file di configurazione del bridge
 create_bridge_config() {
-    local bridge_name="$1"
-    local selected_interfaces=("$@")
-
     # Creazione del file .netdev
     local netdev_file="/etc/systemd/network/${bridge_name}.netdev"
     echo "Creazione del file ${netdev_file}..."
@@ -105,7 +104,7 @@ DHCP=yes
 EOF
 
     # Creazione dei file .network per le interfacce selezionate
-    for iface in "${selected_interfaces[@]:1}"; do
+    for iface in "${selected_interfaces[@]}"; do
         local iface_file="/etc/systemd/network/${iface}.network"
         echo "Creazione del file ${iface_file}..."
         cat > "${iface_file}" <<EOF
@@ -120,8 +119,6 @@ EOF
 
 # Funzione per riavviare systemd-networkd e verificare il bridge
 restart_networkd_and_check_bridge() {
-    local bridge_name="$1"
-
     echo "Riavvio di systemd-networkd..."
     systemctl restart systemd-networkd
 
@@ -141,12 +138,14 @@ main() {
     check_root
     ensure_networkd_active
 
-    local selected_interfaces=($(select_interfaces))
-    local bridge_name=$(ask "Inserisci il nome del bridge" "br0")
+    select_interfaces
 
-    comment_interfaces_in_file "${selected_interfaces[@]}"
-    create_bridge_config "$bridge_name" "${selected_interfaces[@]}"
-    restart_networkd_and_check_bridge "$bridge_name"
+    # Chiede il nome del bridge
+    bridge_name=$(ask "Inserisci il nome del bridge" "br0")
+
+    comment_interfaces_in_file
+    create_bridge_config
+    restart_networkd_and_check_bridge
 
     echo "Configurazione del bridge completata!"
 }
