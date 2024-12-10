@@ -45,9 +45,17 @@ install_glances() {
     echo "Glances installato correttamente!"
 }
 
-# Aggiungere Glances -w in Autostart ad ogni riavvio
+# Configura Glances per l'avvio automatico in modalità web server
 configure_glances_autostart() {
     echo "Configurazione di Glances per l'avvio automatico in modalità web server..."
+
+    # Trova dinamicamente il percorso di Glances
+    GLANCES_PATH=$(command -v glances)
+    if [[ -z "$GLANCES_PATH" ]]; then
+        echo "Errore: Glances non trovato. Assicurati che sia installato correttamente."
+        exit 1
+    fi
+    echo "Percorso di Glances trovato: $GLANCES_PATH"
 
     # Percorso del file di servizio
     SERVICE_FILE="/etc/systemd/system/glances.service"
@@ -59,7 +67,7 @@ Description=Glances Web Server
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/glances -w
+ExecStart=$GLANCES_PATH -w
 Restart=always
 User=root
 WorkingDirectory=/root
