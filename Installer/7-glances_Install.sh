@@ -41,8 +41,7 @@ remove_glances() {
 # Funzione per installare Glances
 install_glances() {
     echo "Installazione di Glances..."
-    pip3 install --break-system-packages fastapi uvicorn || { echo "Errore durante l'installazione delle dipendenze di Glances."; exit 1; }
-    pip3 install --break-system-packages glances || { echo "Errore durante l'installazione di Glances."; exit 1; }
+    pip3 install --break-system-packages glances[all] || { echo "Errore durante l'installazione di Glances."; exit 1; }
     echo "Glances installato correttamente!"
 }
 
